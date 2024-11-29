@@ -145,15 +145,33 @@ open Nat Finset in
 lemma add_pow_eq_pow_add_pow (x y : R) : (x + y) ^ p = x ^ p + y ^ p := by {
   have hp' : p.Prime := hp.out
   have range_eq_insert_Ioo : range p = insert 0 (Ioo 0 p)
-  · sorry
+  · ext x
+    simp only [mem_range, mem_insert, mem_Ioo]
+    by_cases h : x = 0
+    · simp [h, pos_of_neZero]
+    · simp [h, false_or, iff_and_self, zero_lt_of_ne_zero h]
   have dvd_choose : ∀ i ∈ Ioo 0 p, p ∣ Nat.choose p i := by
-    sorry
+    intro i imem
+    rw [mem_Ioo] at imem
+    refine Prime.dvd_choose hp' imem.2 ?_ p.le_refl
+    simp only [tsub_lt_self_iff]
+    exact ⟨pos_of_neZero p, imem.1⟩
   have h6 : ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * Nat.choose p i = 0 :=
   calc
     _ =  ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * 0 := by
-      sorry
-    _ = 0 := by sorry
-  sorry
+      apply sum_congr rfl
+      intro i imem
+      congrm x ^ i * y ^ (p - i) * ?_
+      rw [CharP.cast_eq_zero_iff R p]
+      exact dvd_choose i imem
+    _ = 0 := by simp
+  rw [add_pow]
+  calc
+    ∑ m ∈ range (p + 1), x ^ m * y ^ (p - m) * ↑(p.choose m)
+    _ = ∑ m ∈ range p, x ^ m * y ^ (p - m) * ↑(p.choose m) + x ^ p := by simp [sum_range_add]
+    _ = y ^ p + ∑ i ∈ Ioo 0 p, x ^ i * y ^ (p - i) * ↑(p.choose i) + x ^ p := by
+      simp [range_eq_insert_Ioo]
+    _ = x ^ p + y ^ p := by rw [h6, add_zero, add_comm]
   }
 
 
@@ -169,19 +187,32 @@ for modules over a ring, so feel free to think of `M₁`, `M₂`, `N` and `M'` a
 You might recognize this as the characterization of a *coproduct* in category theory. -/
 
 def coproduct (f : M₁ →ₗ[R] N) (g : M₂ →ₗ[R] N) : M₁ × M₂ →ₗ[R] N where
-  toFun x := sorry
-  map_add' x y := sorry
-  map_smul' r x := sorry
+  toFun x := f x.1 + g x.2
+  map_add' x y := by
+    simp only [Prod.fst_add, map_add, Prod.snd_add]
+    abel
+  map_smul' r x := by simp
 
 -- this can be useful to have as a simp-lemma, and should be proven by `rfl`
 @[simp] lemma coproduct_def (f : M₁ →ₗ[R] N) (g : M₂ →ₗ[R] N) (x : M₁) (y : M₂) :
-  coproduct f g (x, y) = sorry := sorry
+  coproduct f g (x, y) = f x + g y := rfl
 
 lemma coproduct_unique {f : M₁ →ₗ[R] N} {g : M₂ →ₗ[R] N} {l : M₁ × M₂ →ₗ[R] N} :
     l = coproduct f g ↔
     l.comp (LinearMap.inl R M₁ M₂) = f ∧
     l.comp (LinearMap.inr R M₁ M₂) = g := by {
-  sorry
+  constructor
+  · intro h
+    rw [h]
+    constructor
+    · ext
+      simp
+    · ext
+      simp
+  · intro ⟨h1, h2⟩
+    ext ⟨x1, x2⟩
+    simp [← h1, ← h2, coproduct_def, LinearMap.coe_comp, LinearMap.coe_inl, comp_apply,
+      LinearMap.coe_inr, ← LinearMap.map_add]
   }
 
 

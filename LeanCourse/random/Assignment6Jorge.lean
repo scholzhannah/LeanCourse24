@@ -32,32 +32,25 @@ abbrev PosReal : Type := {x : ℝ // x > 0}
 /- Codomain is a subtype (usually not recommended). -/
 example (f : ℝ → PosReal) (hf : Monotone f) :
     Monotone (fun x ↦ log (f x)) := by {
-  intro a b aleb
-  rw [Real.log_le_log_iff (f a).2.lt (f b).2]
-  exact hf aleb
+  sorry
   }
 
 /- Specify that the range is a subset of a given set (recommended). -/
 example (f : ℝ → ℝ) (hf : range f ⊆ {x | x > 0}) (h2f : Monotone f) :
-    Monotone (log ∘ f) := by {
-  intro a b aleb
-  rw [comp_apply, comp_apply, Real.log_le_log_iff (hf (mem_range_self a)) (hf (mem_range_self b))]
-  exact h2f aleb
+  Monotone (log ∘ f) := by {
+  sorry
   }
 
 /- Domain is a subtype (not recommended). -/
 example (f : PosReal → ℝ) (hf : Monotone f) :
     Monotone (fun x ↦ f ⟨exp x, exp_pos x⟩) := by {
-  intro a b aleb
-  exact hf (Real.exp_le_exp_of_le aleb)
+  sorry
   }
 
 /- Only specify that a function is well-behaved on a subset of its domain (recommended). -/
 example (f : ℝ → ℝ) (hf : MonotoneOn f {x | x > 0}) :
     Monotone (fun x ↦ f (exp x)) := by {
-  intro a b aleb
-  apply hf (Real.exp_pos a) (Real.exp_pos b)
-  exact Real.exp_le_exp_of_le aleb
+  sorry
   }
 
 
@@ -68,47 +61,27 @@ open Subgroup
 
 /- State and prove that the preimage of `U` under the composition of `φ` and `ψ` is a preimage
 of a preimage of `U`. This should be an equality of subgroups! -/
-example (φ : G →* H) (ψ : H →* K) (U : Subgroup K) :
-    Subgroup.comap (ψ.comp φ) U = Subgroup.comap φ (Subgroup.comap ψ U) := by
-  ext
-  simp
+example (φ : G →* H) (ψ : H →* K) (U : Subgroup K) : sorry := sorry
 
 /- State and prove that the image of `S` under the composition of `φ` and `ψ`
 is a image of an image of `S`. -/
-example (φ : G →* H) (ψ : H →* K) (S : Subgroup G) :
-    Subgroup.map (ψ.comp φ) S = Subgroup.map ψ (Subgroup.map φ S) := by
-  ext
-  simp
+example (φ : G →* H) (ψ : H →* K) (S : Subgroup G) : sorry := sorry
+
 
 
 /- Define the conjugate of a subgroup, as the elements of the form `xhx⁻¹` for `h ∈ H`. -/
-def conjugate (x : G) (H : Subgroup G) : Subgroup G where
-  carrier := {x * h * x⁻¹ | h ∈ H}
-  mul_mem' := by
-    intro a b ⟨g, gmem, hg⟩ ⟨h, hmem, hh⟩
-    use g * h
-    refine ⟨Subgroup.mul_mem H gmem hmem, ?_⟩
-    simp [← hg, ← hh]
-  one_mem' := by simp [Subgroup.one_mem]
-  inv_mem' := by
-    intro y ⟨g, gmem, hg⟩
-    use g⁻¹
-    refine ⟨Subgroup.inv_mem H gmem ,?_⟩
-    simp [← hg, mul_assoc]
+def conjugate (x : G) (H : Subgroup G) : Subgroup G := sorry
 
 
 /- Now let's prove that a group acts on its own subgroups by conjugation. -/
 
 lemma conjugate_one (H : Subgroup G) : conjugate 1 H = H := by {
-  ext
-  simp [conjugate]
+  sorry
   }
 
 lemma conjugate_mul (x y : G) (H : Subgroup G) :
     conjugate (x * y) H = conjugate x (conjugate y H) := by {
-  ext z
-  simp only [conjugate, mul_inv_rev, Subgroup.mem_mk, mem_setOf_eq, exists_exists_and_eq_and]
-  group
+  sorry
   }
 
 
@@ -121,10 +94,7 @@ example (g g' : G) (x : X) : (g * g') • x = g • (g' • x) := by exact?
 example (x : X) : (1 : G) • x = x := by exact?
 
 /- Now show that `conjugate` specifies a group action from `G` onto its subgroups. -/
-instance : MulAction G (Subgroup G) where
-  smul := conjugate
-  one_smul := conjugate_one
-  mul_smul := conjugate_mul
+instance : MulAction G (Subgroup G) := sorry
 
 
 
@@ -136,9 +106,12 @@ Let's define the smallest equivalence relation on a type `X`. -/
 def myEquivalenceRelation (X : Type*) : Setoid X where
   r x y := x = y
   iseqv := {
-    refl := by simp
-    symm := by simp
-    trans := by simp
+    refl := by exact fun x ↦ rfl
+    symm := by exact fun {x y} a ↦ id (Eq.symm a)
+    trans := by {
+      intro x y z hx hy
+      simp[hx, hy]
+    }
   } -- Here you have to show that this is an equivalence.
                  -- If you click on the `sorry`, a lightbulb will appear to give the fields
 
@@ -158,15 +131,26 @@ You can use this using the induction tactic: `induction x using Quotient.ind; re
 -/
 def quotient_equiv_subtype (X : Type*) :
     Quotient (myEquivalenceRelation X) ≃ X where
-  toFun := Quotient.lift id (by simp)
-  invFun := fun x ↦ ⟦x⟧
-  left_inv := by
-    apply Quotient.ind
-    intro x
-    simp
-  right_inv := by
-    intro x
-    simp
+      toFun := by {
+     intro h
+     apply Quotient.lift id (λ a b h => ?_)
+     repeat exact h
+     }
+      invFun := by {
+     exact fun a ↦ ⟦a⟧
+     }
+      left_inv := by {
+      intro x
+      induction x using Quotient.ind; rename_i x
+      rfl
+     }
+      right_inv := by {
+      intro x
+      rfl
+     }
+
+
+
 
 section GroupActions
 
@@ -178,68 +162,103 @@ precisely when one element is in the orbit of the other. -/
 def orbitOf (x : X) : Set X := range (fun g : G ↦ g • x)
 
 lemma orbitOf_eq_iff (x y : X) : orbitOf G x = orbitOf G y ↔ y ∈ orbitOf G x := by {
+  --unfold orbitOf at *
   constructor
   · intro h
-    rw [h]
+    simp at *
+    have h2 : y ∈ orbitOf G y := by {
+    have h3 : y = (1 : G) • y := by exact Eq.symm (MulAction.one_smul y)
+    unfold orbitOf
     use 1
-    simp
-  · intro ⟨a, ha⟩
-    ext z
+    exact id (Eq.symm h3)
+    }
+    rw[h]
+    assumption
+  · intro h
+    ext a
     constructor
-    · intro ⟨b, hb⟩
-      rw [← hb, ← ha]
-      use b * a⁻¹
-      simp [← mul_smul]
-    · intro ⟨b, hb⟩
-      rw [← hb, ← ha]
-      use b * a
-      simp [mul_smul]
+    · intro ha
+  --unfold orbitOf at *
+  --have hy : ∃ g_1 : G, g_1 • x = y := by exact h
+      obtain ⟨g_1, hg_1⟩ := h
+      obtain ⟨g_2, hg_2⟩ := ha
+      unfold orbitOf
+      simp at *
+      use g_2 * g_1⁻¹
+      rw[← hg_1, ← hg_2]
+  --have hg : (g_2 • g_1⁻¹) • g_1 = g_2 • (g_1⁻¹ • g_1) := by exact IsScalarTower.smul_assoc g_2 g_1⁻¹ g_1
+      have hgact : ((g_2:G) * (g_1⁻¹:G)) • (g_1:G) = (g_2:G) • ((g_1⁻¹:G) * (g_1:G)) := by exact mul_smul g_2 g_1⁻¹ g_1
+  --have h1 : (g_1⁻¹ * g_1) • x = (1 : G) • x := by group
+  --have h2 : (1 : G) • x = x := by exact MulAction.one_smul x
+      have h3 : (g_2 * g_1⁻¹) • g_1 • x = ((g_2 * g_1⁻¹) • g_1) • x := by exact Eq.symm (IsScalarTower.smul_assoc (g_2 * g_1⁻¹) g_1 x)
+      have h4 : ((g_2 * g_1⁻¹) • g_1) • x = (g_2 * (g_1⁻¹ * g_1)) • x := by exact congrFun (congrArg HSMul.hSMul hgact) x
+      rw[h3, h4]
+      group
+    · intro ha -- analogous proof to the previous one
+      obtain ⟨g_1, hg_1⟩ := h
+      obtain ⟨g_2, hg_2⟩ := ha
+      unfold orbitOf
+      simp at *
+      use g_2 * g_1
+      rw[← hg_2, ← hg_1]
+      exact mul_smul g_2 g_1 x
   }
 
 /- Define the stabilizer of an element `x` as the subgroup of elements
 `g ∈ G` that satisfy `g • x = x`. -/
 def stabilizerOf (x : X) : Subgroup G where
-  carrier := {g | g • x = x}
-  mul_mem' := by
+  carrier := {g : G | g • x = x}
+  mul_mem' := by{
     intro a b ha hb
-    rw [mem_setOf_eq] at ha hb
-    simp [mul_smul, hb, ha]
+    have hag : ∃ g1 : G, g1 • a = a := by exact MulAction.exists_smul_eq G a a
+    have hbg : ∃ g2 : G, g2 • b = b := by exact MulAction.exists_smul_eq G b b
+    obtain ⟨g1, hg1⟩ := hag
+    obtain ⟨g2, hg2⟩ := hbg
+    have := calc
+      (a * b)• x = a• (b• x):= by exact mul_smul a b x
+      _= a • x := by exact congrArg (HSMul.hSMul a) hb
+      _= x := by exact ha
+    trivial
+  }
   one_mem' := by simp
-  inv_mem' := by
-    intro g gmem
-    rw [mem_setOf_eq] at gmem ⊢
-    rw [inv_smul_eq_iff, gmem]
+  inv_mem' := by {
+    simp
+    intro x_1 hx_1
+    exact inv_smul_eq_iff.mpr (id (Eq.symm hx_1))
+  }
 
 -- This is a lemma that allows `simp` to simplify `x ≈ y` in the proof below.
 @[simp] theorem leftRel_iff {x y : G} {s : Subgroup G} :
     letI := QuotientGroup.leftRel s; x ≈ y ↔ x⁻¹ * y ∈ s :=
   QuotientGroup.leftRel_apply
 
-#check Equiv.ofBijective
-
-/- Let's probe the orbit-stabilizer theorem.
+/- Let's prove the orbit-stabilizer theorem.
 
 Hint: Only define the forward map (as a separate definition),
 and use `Equiv.ofBijective` to get an equivalence.
 (Note that we are coercing `orbitOf G x` to a (sub)type in the right-hand side) -/
-def orbit_stabilizer_theorem (x : X) : G ⧸ stabilizerOf G x ≃ orbitOf G x :=
-  Equiv.ofBijective (Quotient.lift (fun g ↦ ⟨g • x, by use g⟩)
-  (by
-    intro a b h
-    simp [stabilizerOf] at h
-    rw [Subtype.mk.injEq, smul_eq_iff_eq_inv_smul, ← mul_smul, h]))
-  (by
-    constructor
-    · refine Quotient.ind fun a ↦ Quotient.ind fun b ↦ ?_
-      intro h
-      apply Quotient.sound
-      simp only [stabilizerOf, Quotient.lift_mk, Subtype.mk.injEq, leftRel_iff, Subgroup.mem_mk,
-        mem_setOf_eq, mul_smul] at h ⊢
-      simp [← h, ← mul_smul]
-    · intro ⟨a, g, ha⟩
-      use g
-      exact SetCoe.ext ha
+def orbit_stabilizer_theorem (x : X) : G ⧸ stabilizerOf G x ≃ orbitOf G x := by {
+  let φ : G ⧸ stabilizerOf G x → orbitOf G x :=
+    Quotient.lift
+    (fun g => ⟨g • x, by simp only [orbitOf]; simp⟩)
+    (by
+        intro a b hab
+        simp
+        refine eq_inv_smul_iff.mp ?_
+        simp at hab
+        have hr : a⁻¹ • b • x = (a⁻¹ * b) • x := by exact smul_smul a⁻¹ b x
+        rw[hr]
+        simp[stabilizerOf] at hab
+        exact id (Eq.symm hab)
     )
+  have h : Bijective φ
+  constructor
+  · sorry
+  · sorry
+  sorry
+}
+
+
 
 
 end GroupActions

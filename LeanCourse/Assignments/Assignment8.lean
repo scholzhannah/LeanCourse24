@@ -181,15 +181,63 @@ a filter of the form `if q then F else G`. The next exercise is a more concrete 
 Useful lemmas here are
 * `Filter.Eventually.filter_mono`
 * `Filter.Eventually.mono` -/
+
+#check Filter.Eventually.filter_mono
+#check Filter.Eventually.mono
+
 lemma technical_filter_exercise {ι α : Type*} {p : ι → Prop} {q : Prop} {a b : α}
     {L : Filter ι} {F G : Filter α}
     (hbF : ∀ᶠ x in F, x ≠ b) (haG : ∀ᶠ x in G, x ≠ a) (haF : pure a ≤ F) (hbG : pure b ≤ G) :
     (∀ᶠ i in L, p i ↔ q) ↔
     Tendsto (fun i ↦ if p i then a else b) L (if q then F else G) := by {
   have hab : a ≠ b
-  · sorry
+  · intro eq
+    subst a
+    rw [eventually_iff_exists_mem] at hbF
+    obtain ⟨v, vmem, hv⟩ := hbF
+    apply (hv b _) rfl
+    exact haF vmem
   rw [tendsto_iff_eventually]
-  sorry
+  constructor
+  · intro h f
+    intro hf
+    rw [eventually_iff_exists_mem] at h hf ⊢
+    obtain ⟨v, vmem, hv⟩ := hf
+    obtain ⟨w, wmem, hw⟩ := h
+    use w, wmem
+    intro y ymem
+    by_cases h : p y
+    · have : a ∈ v := by
+        apply haF
+        simp_all
+      simp [h, hv a this]
+    · have : b ∈ v := by
+        apply hbG
+        simp_all
+      simp [h, hv b this]
+  · intro h
+    replace h := @h (fun x ↦ x = a ↔ q)
+    suffices ∀ᶠ (x : ι) in L, (if p x then a else b) = a ↔ q by
+      apply Filter.Eventually.mono this
+      intro i hp
+      rw [← hp]
+      constructor
+      · intro h
+        simp only [h, ↓reduceIte]
+      · intro hp
+        by_contra ne
+        apply hab
+        simp_all
+    apply h
+    rw [eventually_iff_exists_mem] at hbF haG ⊢
+    obtain ⟨v, vmem, hv⟩ := hbF
+    obtain ⟨u, umem, hu⟩ := haG
+    -- I think I need to do a case split here
+    use v ∩ u
+    constructor
+    ·
+      sorry
+    · sorry
   }
 
 /- To be more concrete, we can use the previous lemma to prove the following.
