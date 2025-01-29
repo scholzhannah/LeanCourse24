@@ -229,29 +229,22 @@ lemma technical_filter_exercise {ι α : Type*} {p : ι → Prop} {q : Prop} {a 
         simp_all
       simp [h, hv b this]
   · intro h
-    replace h := @h (fun x ↦ x = a ↔ q)
-    suffices ∀ᶠ (x : ι) in L, (if p x then a else b) = a ↔ q by
-      apply Filter.Eventually.mono this
-      intro i hp
-      rw [← hp]
-      constructor
-      · intro h
-        simp only [h, ↓reduceIte]
-      · intro hp
-        by_contra ne
-        apply hab
-        simp_all
-    apply h
-    rw [eventually_iff_exists_mem] at hbF haG ⊢
-    obtain ⟨v, vmem, hv⟩ := hbF
-    obtain ⟨u, umem, hu⟩ := haG
-    -- I think I need to do a case split here
-    use v ∩ u
-    constructor
-    ·
-      sorry
-    · sorry
+    simp_all only [ne_eq]
+    by_cases hq : q
+    · simp_all only [hq]
+      replace h := @h fun x ↦ x ≠ b
+      apply Filter.Eventually.mono
+      exact h hbF
+      intros
+      simp_all
+    · simp_all only [hq]
+      replace h := @h fun x ↦ x ≠ a
+      apply Filter.Eventually.mono
+      exact h haG
+      intros
+      simp_all
   }
+
 
 /- To be more concrete, we can use the previous lemma to prove the following.
 if we denote the characteristic function of `A` by `1_A`, and `f : ℝ → ℝ` is a function,
@@ -263,5 +256,16 @@ lemma tendsto_indicator_iff {ι : Type*} {L : Filter ι} {s : ι → Set ℝ} {t
     (ha : ∀ x, f x ≠ 0) :
     (∀ x, ∀ᶠ i in L, x ∈ s i ↔ x ∈ t) ↔
     Tendsto (fun i ↦ indicator (s i) f) L (𝓝 (indicator t f)) := by {
-  sorry
+  rw [tendsto_pi_nhds]
+  apply forall_congr'
+  intro x
+  rw [technical_filter_exercise (a := f x) (b := 0) (F := 𝓝 (f x)) (G := 𝓝 0)]
+  congrm Tendsto (fun i ↦ if x ∈ s i then f x else 0) L ?_
+  by_cases h : x ∈ t
+  · simp [h]
+  · simp [h]
+  · exact ContinuousAt.eventually_ne (fun ⦃U⦄ a ↦ a) (ha x)
+  · exact ContinuousAt.eventually_ne (fun ⦃U⦄ a ↦ a) fun a ↦ ha x (id (Eq.symm a))
+  · exact intervalIntegral.FTCFilter.pure_le
+  · exact intervalIntegral.FTCFilter.pure_le
   }
