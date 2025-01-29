@@ -2,9 +2,9 @@
 
 Please fill out the following. Fill in the project topic once you have decided.
 ```
-First & last name:
-Project topic:
-Partner (optional):
+First & last name: Hannah Scholz
+Project topic: Examples of CW complexes
+Link: https://github.com/scholzhannah/CWComplexes
 ```
 
 ## Your own project
